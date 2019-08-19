@@ -155,6 +155,7 @@ where
     Add<Reduced<Mul<Dv<L, Tag>, R>>, Reduced<Mul<L, Dv<R, Tag>>>>: Reduce,
 {
     #[rustfmt::skip]
+    #[allow(clippy::type_complexity)]
     type Output = Reduced<Add<
         Reduced<Mul<Dv<L, Tag>, R>>,
         Reduced<Mul<L, Dv<R, Tag>>>,
@@ -179,6 +180,7 @@ where
     Sub<Reduced<Div<Dv<L, Tag>, R>>, Reduced<Mul<Div<L, Mul<R, R>>, Dv<R, Tag>>>>: Reduce,
 {
     #[rustfmt::skip]
+    #[allow(clippy::type_complexity)]
     type Output = Reduced<Sub<
         Reduced<Div<Dv<L, Tag>, R>>,
         Reduced<Mul<Div<L, Mul<R, R>>, Dv<R, Tag>>>,

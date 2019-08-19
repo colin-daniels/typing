@@ -19,6 +19,11 @@ pub trait Paren: Sized {
         Self::LEN
     }
 
+    #[inline]
+    fn is_empty(&self) -> bool {
+        Self::LEN == 0
+    }
+
     /// Apply a function to each element.
     /// # Examples
     /// ```

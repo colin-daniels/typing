@@ -16,7 +16,5 @@ where
 
 impl<T: Clone> Fill<T> for () {
     #[inline(always)]
-    fn fill(_: T) -> Self {
-        ()
-    }
+    fn fill(_: T) -> Self {}
 }
