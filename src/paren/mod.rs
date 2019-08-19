@@ -3,6 +3,7 @@ pub mod ops;
 
 mod macros;
 
+use crate::ident::{TypeEqFn, TypeId};
 use ops::*;
 
 pub mod prelude {
@@ -102,6 +103,14 @@ pub trait Paren: Sized {
     fn filter<F>(self) -> FilterOut<F, Self>
     where
         Self: Filter<F>,
+    {
+        <Self as Filter<_>>::filter(self)
+    }
+
+    #[inline]
+    fn filter_type<T: TypeId>(self) -> FilterOut<TypeEqFn<T>, Self>
+    where
+        Self: Filter<TypeEqFn<T>>,
     {
         <Self as Filter<_>>::filter(self)
     }

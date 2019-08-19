@@ -1,7 +1,7 @@
 use crate::boolean::{BoolIfElse, IfElse};
 use crate::expr::deriv::Deriv;
 use crate::expr::{Expr, Expression, One, Reduce, Zero};
-use crate::ident::TypeIsSame;
+use crate::ident::TypeEq;
 use std::fmt::{Debug, Formatter};
 use std::marker::PhantomData;
 
@@ -59,7 +59,7 @@ impl<T, Tag> Expression for Var<T, Tag> {
 
 impl<T, TagA, TagB, Same> Deriv<TagB> for Var<T, TagA>
 where
-    TagA: TypeIsSame<TagB, Output = Same>,
+    TagA: TypeEq<TagB, Output = Same>,
     Same: BoolIfElse<One, Zero>,
     IfElse<Same, One, Zero>: Default,
 {
