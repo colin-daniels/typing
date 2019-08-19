@@ -12,7 +12,7 @@ pub mod prelude {
     pub use crate::boolean::{False, True};
     pub use crate::func::{Apply, CanApply, Func};
     pub use crate::option::{NoneType, SomeType};
-    pub use crate::{paren, paren::Paren, paren_pat, Paren};
+    pub use crate::{declare_func, impl_func, paren, paren::Paren, paren_pat, Paren};
     pub use crate::{T0, T1};
 }
 

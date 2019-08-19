@@ -8,17 +8,42 @@ use ops::*;
 
 pub mod prelude {
     pub use super::Paren;
-    pub use crate::{impl_func, named_func, paren, paren_pat, Paren};
+    pub use crate::{declare_func, impl_func, paren, paren_pat, Paren};
 }
 
 pub trait Paren: Sized {
+    /// Number of elements/length of the `Paren`.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// assert_eq!(<Paren!(i32, bool, char)>::LEN, 3);
+    /// assert_eq!(<Paren!(bool)>::LEN, 1);
+    /// assert_eq!(<Paren!()>::LEN, 0);
+    ///
+    /// ```
     const LEN: usize;
 
+    /// Number of elements/length of the `Paren`.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// assert_eq!(paren!(1, false, 'c').len(), 3);
+    /// assert_eq!(paren!(true).len(), 1);
+    /// assert_eq!(paren!().len(), 0);
+    ///
+    /// ```
     #[inline]
     fn len(&self) -> usize {
         Self::LEN
     }
 
+    /// Returns `true` if there are no elements in the `Paren`.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// assert_eq!(paren!("hello", 3.0, 'z').is_empty(), false);
+    /// assert_eq!(paren!().is_empty(), true);
+    /// ```
     #[inline]
     fn is_empty(&self) -> bool {
         Self::LEN == 0
@@ -28,7 +53,7 @@ pub trait Paren: Sized {
     /// # Examples
     /// ```
     /// use typing::paren::prelude::*;
-    /// named_func!(AddTwo {
+    /// declare_func!(AddTwo {
     ///     |x: f64| -> f64 { x + 2.0 },
     ///     |x: i32| -> i32 { x + 2 },
     ///     |x: &str| -> String { String::from(x) + " " + x },
@@ -128,6 +153,19 @@ pub trait Paren: Sized {
         FilterMap::filter_map(self)
     }
 
+    /// Perform a left fold over all elements of the paren.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// declare_func!(FoldFunc {
+    ///     |(acc, v): (u8,  u16)| -> u16 { acc as u16 + v },
+    ///     |(acc, v): (u16, u32)| -> u32 { acc as u32 + v },
+    ///     |(acc, v): (u32, u64)| -> u64 { acc as u64 + v },
+    /// });
+    ///
+    /// let p: (u16, (u32, (u64, ()))) = paren!(1, 2, 3);
+    /// assert_eq!(p.fold::<FoldFunc, _>(1u8), 7u64);
+    /// ```
     #[inline]
     fn fold<F, B>(self, init: B) -> FoldOut<F, Self, B>
     where
@@ -136,6 +174,14 @@ pub trait Paren: Sized {
         Fold::fold(self, init)
     }
 
+    /// Reverse the order of the elements in the paren.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// let a = paren!(true, [5, 10], "foo", "bar");
+    /// let b = paren!("bar", "foo", [5, 10], true);
+    /// assert_eq!(a.reverse(), b);
+    /// ```
     #[inline]
     fn reverse(self) -> ReverseOut<Self>
     where
@@ -144,6 +190,19 @@ pub trait Paren: Sized {
         Reverse::reverse(self)
     }
 
+    /// Scan over all elements of a paren with a mutable state.
+    /// # Examples
+    /// ```
+    /// use typing::prelude::*;
+    /// declare_func!(Accumulate {
+    ///     |(state, v): (&mut u64, u16)| -> u64 { *state += v as u64; *state },
+    ///     |(state, v): (&mut u64, u32)| -> u64 { *state += v as u64; *state },
+    ///     |(state, v): (&mut u64, u64)| -> u64 { *state += v as u64; *state },
+    /// });
+    ///
+    /// let p: (u16, (u32, (u64, (u64, ())))) = paren!(1, 2, 3, 4);
+    /// assert_eq!(p.scan::<Accumulate, _>(0u64), paren!(1, 3, 6, 10));
+    /// ```
     #[inline]
     fn scan<F, S>(self, state: S) -> ScanOut<F, S, Self>
     where
