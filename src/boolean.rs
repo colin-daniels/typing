@@ -34,54 +34,101 @@ mod ops {
     use super::{Bool, True, False};
     use crate::func::Func;
 
-    macro_rules! logic_fn {
-        ($name:ident, $trait:ident, $alias:ident) => {
-            pub struct $name;
-            impl<L: $trait<R>, R> $crate::func::Func<(L, R)> for $name {
-                type Output = $alias<L, R>;
+    macro_rules! logic_unop {
+        ($btrait:ident, $trait:ident, $method:ident; $in:ident => $out:ident, $($rest:tt)*) => {
+            impl $btrait for $in { type Output = $out; }
+            impl std::ops::$trait for $in {
+                type Output = $out;
+                #[inline]
+                fn $method(self) -> Self::Output {
+                    Default::default()
+                }
+            }
+            logic_unop!($btrait, $trait, $method; $($rest)*);
+        };
+        ($btrait:ident, $trait:ident, $method:ident;) => {};
+    }
+
+    macro_rules! logic_binop {
+        (
+            $btrait:ident, $trait:ident, $method:ident; 
+            ($l:ident, $r:ident) => $out:ident, 
+            $($rest:tt)*
+        ) => {
+            impl $btrait<$r> for $l { type Output = $out; }
+            impl std::ops::$trait<$r> for $l {
+                type Output = $out;
+                #[inline]
+                fn $method(self, _: $r) -> Self::Output {
+                    Default::default()
+                }
+            }
+            logic_binop!($btrait, $trait, $method; $($rest)*);
+        };
+        ($btrait:ident, $trait:ident, $method:ident;) => {};
+    }
+
+    macro_rules! binop_fn {
+        ($name:ident, $trait:ident) => {
+            impl<L, R> Func<(L, R)> for $name
+            where
+                L: $trait<R>,
+            {
+                type Output = <L as $trait<R>>::Output;
                 #[inline]
                 fn call(_: (L, R)) -> Self::Output {
-                    $alias::<L, R>::default()
+                    Default::default()
                 }
             }
         };
     }
-    
-    pub trait BoolNot: Bool { type Output: Bool; }
-    impl BoolNot for True  { type Output = False; }
-    impl BoolNot for False { type Output = True;  }
-    pub type Not<T> = <T as BoolNot>::Output;
-    
-    pub struct NotFn;
-    impl<T: BoolNot> Func<T> for NotFn {
-        type Output = Not<T>;
-        #[inline]
-        fn call(_: T) -> Self::Output { Not::<T>::default() }
-    }
-    
-    pub trait BoolAnd<R>: Bool { type Output: Bool; }
-    impl BoolAnd<True>  for False { type Output = False; }
-    impl BoolAnd<False> for True  { type Output = False; }
-    impl BoolAnd<True>  for True  { type Output = True;  }
-    impl BoolAnd<False> for False { type Output = False; }
-    pub type And<L, R> = <L as BoolAnd<R>>::Output;
-    logic_fn!(AndFn, BoolAnd, And);
 
-    pub trait BoolOr<R>: Bool { type Output: Bool; }
-    impl BoolOr<True>  for False { type Output = True;  }
-    impl BoolOr<False> for True  { type Output = True;  }
-    impl BoolOr<True>  for True  { type Output = True;  }
-    impl BoolOr<False> for False { type Output = False; }
-    pub type Or<L, R> = <L as BoolOr<R>>::Output;
-    logic_fn!(OrFn, BoolOr, Or);
+    pub trait BoolNot { type Output: Bool; }
+    pub type Not<T> = <T as BoolNot>::Output;
+    logic_unop!(
+        BoolNot, Not, not; 
+        True => False,
+        False => True,
+    );
+
+    pub trait BoolAnd<R> { type Output: Bool; }    
+    logic_binop!(
+        BoolAnd, BitAnd, bitand; 
+        (False, False) => False,
+        (False,  True) => False,
+        ( True, False) => False,
+        ( True,  True) =>  True,
+    );
     
-    pub trait BoolXor<R>: Bool { type Output: Bool; }
-    impl BoolXor<True>  for False { type Output = True;  }
-    impl BoolXor<False> for True  { type Output = True;  }
-    impl BoolXor<True>  for True  { type Output = False; }
-    impl BoolXor<False> for False { type Output = False; }
+    pub type And<L, R> = <L as BoolAnd<R>>::Output;
+    pub struct AndFn;
+    binop_fn!(AndFn, BoolAnd);
+
+    pub trait BoolOr<R> { type Output: Bool; }
+    logic_binop!(
+        BoolOr, BitOr, bitor; 
+        (False, False) => False,
+        (False,  True) =>  True,
+        ( True, False) =>  True,
+        ( True,  True) =>  True,
+    );
+
+    pub type Or<L, R> = <L as BoolOr<R>>::Output;
+    pub struct OrFn;
+    binop_fn!(OrFn, BoolOr);
+
+    pub trait BoolXor<R> { type Output: Bool; }
+    logic_binop!(
+        BoolXor, BitXor, bitxor; 
+        (False, False) => False,
+        (False,  True) =>  True,
+        ( True, False) =>  True,
+        ( True,  True) => False,
+    );
+    
     pub type Xor<L, R> = <L as BoolXor<R>>::Output;
-    logic_fn!(XorFn, BoolXor, Xor);
+    pub struct XorFn;
+    binop_fn!(XorFn, BoolXor);
     
     pub trait BoolIfElse<T, F>: Bool { type Output; }
     impl<T, F> BoolIfElse<T, F> for True  { type Output = T; }
