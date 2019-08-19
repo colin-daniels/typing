@@ -1,4 +1,4 @@
-mod all;
+mod any_all;
 mod fill;
 mod filter;
 mod filter_map;
@@ -10,7 +10,7 @@ mod scan;
 mod zip;
 mod zip_with;
 
-pub use all::{All, AllOut};
+pub use any_all::{All, AllOut, Any, AnyOut};
 pub use fill::Fill;
 pub use filter::{Filter, FilterOut};
 pub use filter_map::{FilterMap, FilterMapOut};

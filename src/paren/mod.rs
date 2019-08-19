@@ -37,7 +37,7 @@ pub trait Paren: Sized {
     where
         Self: Map<F>,
     {
-        <Self as Map<_>>::map(self)
+        Map::map(self)
     }
 
     /// Zip two parens.
@@ -59,7 +59,7 @@ pub trait Paren: Sized {
     where
         Self: Zip<B>,
     {
-        <Self as Zip<_>>::zip(self, other)
+        Zip::zip(self, other)
     }
 
     /// Zip two parens with a given function that accepts a tuple of each pair of elements
@@ -67,7 +67,7 @@ pub trait Paren: Sized {
     /// # Examples
     /// ```
     /// use typing::paren::prelude::*;
-    /// use typing::func::AddFn;
+    /// use typing::func::ops::AddFn;
     ///
     /// let a = paren!(1.0, 2, String::from("Hello"));
     /// let b = paren!(2.0, 2, "World");
@@ -80,7 +80,7 @@ pub trait Paren: Sized {
     where
         Self: ZipWith<F, B>,
     {
-        <Self as ZipWith<_, _>>::zip_with(self, other)
+        ZipWith::zip_with(self, other)
     }
 
     /// Construct a paren with elements cloned from a given value.
@@ -104,7 +104,7 @@ pub trait Paren: Sized {
     where
         Self: Filter<F>,
     {
-        <Self as Filter<_>>::filter(self)
+        Filter::filter(self)
     }
 
     #[inline]
@@ -112,7 +112,7 @@ pub trait Paren: Sized {
     where
         Self: Filter<TypeEqFn<T>>,
     {
-        <Self as Filter<_>>::filter(self)
+        Filter::filter(self)
     }
 
     #[inline]
@@ -120,7 +120,7 @@ pub trait Paren: Sized {
     where
         Self: FilterMap<F>,
     {
-        <Self as FilterMap<_>>::filter_map(self)
+        FilterMap::filter_map(self)
     }
 
     #[inline]
@@ -128,7 +128,7 @@ pub trait Paren: Sized {
     where
         Self: Fold<F, B>,
     {
-        <Self as Fold<_, _>>::fold(self, init)
+        Fold::fold(self, init)
     }
 
     #[inline]
@@ -136,7 +136,7 @@ pub trait Paren: Sized {
     where
         Self: Reverse,
     {
-        <Self as Reverse>::reverse(self)
+        Reverse::reverse(self)
     }
 
     #[inline]
@@ -144,7 +144,23 @@ pub trait Paren: Sized {
     where
         Self: Scan<F, S>,
     {
-        <Self as Scan<_, _>>::scan(self, state)
+        Scan::scan(self, state)
+    }
+
+    #[inline]
+    fn any<F>(self) -> AnyOut<F, Self>
+    where
+        Self: Any<F>,
+    {
+        Any::any(self)
+    }
+
+    #[inline]
+    fn all<F>(self) -> AllOut<F, Self>
+    where
+        Self: All<F>,
+    {
+        All::all(self)
     }
 }
 
